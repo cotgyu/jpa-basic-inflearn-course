@@ -299,6 +299,7 @@
 	-	눈에 보이지 않음
 	-	엔티티 매니저를 통해 영속성 컨텍스트에 접근함
 		-	(J2SE환경) 엔티티 매니저를 생성하면 1:1로 영속성 컨텍스트가 생성됨.
+		-	스프링 프레임워크는 개념이 조금 달라짐.
 
 -	엔티티의 생명주기
 
@@ -335,14 +336,105 @@
 		em.remove(member);
 		```
 
+### 영속성 컨텍스트 2
+
 -	영속성 컨텍스트의 이점 (데이터베이스와 어플리케이션과 중간계층이 있음.)
 
 	-	1차 캐시
+
+		-	영속성 컨텍스트 내부에 1차 캐시라는 것을 들고있음.
+		-	키가 @ID, 값이 Entity(객체) 라고 생각면 됨.
+		-	조회 시 영속성 컨텍스트에서 먼저 1차 캐시에서 찾음
+		-	1차 캐시에 없는 경우 DB에서 조회 -> 1차 캐시에 저장 -> 반환
+		-	비즈니스가 끝나면 영속성 컨텍스트를 지움(1차캐시도 날라감). 아주 짧은 시간에서만 이점이기 때문에 엄청난 큰 이점은 아님.
+
+		```java
+		...
+		em.persist(member);
+
+
+		Member findMember = em.find(Member.class, 101L);
+
+
+		// select 쿼리가 찍히지 않고 print 찍히는 것을 알 수 있음 (1차캐시에서 조회))
+		System.out.println("findMember.id = " + findMember.getId());
+
+
+		tx.commit();
+		```
+
 	-	동일성 보장
+
+		-	1차 캐시로 반복가능한 읽기(REPEATABLE READ) 등급의 트랜잭션 격리 수준을 데이터베이스가 아닌 애플리케이션 차원에서 제공
+
+		```java
+		Member member1 = em.find(Member.class, "member1");
+		Member member2 = em.find(Member.class, "member1");
+
+
+		// 동일성 비교 true
+		System.out.println(a == b);
+		```
+
 	-	트랜잭션을 지원하는 쓰기 지연
+
+		-	em.persist(memberA); 이 떄는 INSERT SQL를 보내지 않고 JPA가 쌓고 있다가 tx.commit(); 하는순간에 SQL를 보낸다.
+		-	영속성 컨텍스트에는 쓰기 지연 SQL 저장소라는 게 있음.
+		-	persist 하면 1차캐시에 저장하고, JPA가 INSERT 쿼리를 생성해서 쓰기 지연 SQL저장소에 저장함.
+		-	commit 하면 flush를 하면서 SQL이 날라감.
+
 	-	변경 감지
+
+		-	수정 시 set만 해주면 된다.
+		-	commit 하는 시점에 flush가 호출되는데, 1차 캐시 안의 엔티티와 스냅샷(값을 읽어온 최초시점의 값)을 비교함.
+		-	비교하고 변경됬으면 update 쿼리를 쓰기지연 SQL 저장소에 만들어둠.
+
+		```java
+		Member member1 = em.find(Member.class, "member1");
+
+
+		member1.setUserName("hi");
+		member1.setAge(10);
+
+
+		// 해당 코드가 필요 없다.
+		//em.update(member1);
+
+
+		tx.commit();
+		```
+
 	-	지연로딩
 
-### 영속성 컨텍스트 2
+### 플러시
 
--
+-	1차 캐시를 지우진 않음.
+-	영속성 컨텍스트의 변경내용을 데이터베이스에 동기화
+-	트랜잭션이라는 작업 단위가 중요 -> 커밋 직전에만 동기화하면 됨
+-	변경감지 & 쓰기지연 SQL저장소에 있는 쿼리들을 데이터베이스에 반영이 되는 과정이다.
+
+-	영속성 컨텍스트를 플러시하는 방법
+
+	-	직적 호출 : em.flush()
+	-	플러시 자동 호출 : 트랜잭션 커밋
+	-	플러시 자동 호출 : JPQL 쿼리 실행 (중간에 JPQL이 실행됐을 때를 대비?)
+
+-	플러시 모드 옵션
+
+	-	em.setFlushMode(FlushModeType.COMMIT)
+	-	FlushModeType.AUTO : 커밋이나 쿼리를 실행할 때 플러시 (기본값. 가급적 그냥 사용할 것)
+	-	FlushModeType.COMMIT : 커밋할 때만 플러시 (중간에 플러시해도 이점이 없는 경우 사용?)
+
+### 준영속 상태
+
+-	준영속?
+
+	-	영속 -> 준영속
+	-	영속 상태의 엔티티가 영속성 컨텍스트에서 분리(detached)
+	-	영속성 컨텍스트가 제공하는 기능을 사용 못함
+
+-	준영속 상태로 만드는 방법
+
+	-	em.detach(entity) : 특정 엔티티만 준영속 상태로 전환
+	-	em.clear() : 영속성 컨텍스트를 완전히 초기화 (테스트 시 쿼리 확인하고 싶을 때 도움이 됌)
+	-	em.close() : 영속성 컨텍스트를 종료

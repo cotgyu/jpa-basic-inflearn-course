@@ -35,6 +35,10 @@ public class JpaMain {
             // 삭제
             //em.remove(findMember);
 
+            // 비영속
+            // em.detach(member);
+            // em.clear();
+
             // JPQL
             List<Member> result = em.createQuery("select m from Member as m", Member.class)
                     .setFirstResult(5)
