@@ -540,3 +540,53 @@
 		-	@Table(uniqueConstraints = {@UniqueConstraint(name ="NAME_AGE_UNIQUE", columnNames={"NAME", "AGE"})})
 
 	-	DDL 생성 기능은 DDL을 자동 생성할 때만 사용되고 JPA의 실행 로직에는 영향을 주지 않는다.
+
+### 필드와 컬럼 매핑
+
+-	요구사항 추가
+
+	-	회원은 일반 회원과 관리자로 구분해야 한다.
+	-	회원 가입일과 수정일이 있어야 한다.
+	-	회원을 설명할 수 있는 필드가 있어야 한다. 이 필드는 길이 제한이 없다.
+
+-	매핑 어노테이션 정리
+
+	-	@Column : 컬럼 매핑
+
+		-	name : 필드와 매핑할 테이블의 컬럼 이름 (기본 값: 객체의 필드이름)
+		-	insertable, updatable : 이 컬럼을 등록, 변경 가능 여부 (기본 값 : TRUE)
+		-	nullable(DDL): null 값의 허용여부를 설정한다. false로 설정하면 DDL 생성 시에 not null 제약조건이 붙는다.
+		-	unique(DDL) : @Table의 uniqueConstraints와 같지만 한 컴럼에 간단히 유니크 제약 조건을 걸 때 사용한다. (잘 안쓰임. 이름이 랜덤값임.. 대신 @Table에서 걸면 이름 지정 가능)
+		-	columnDefinition : 데이터베이스 컬럼 정보를 직접 줄 수있다.
+			-	columnDefinition= "varchar(100) default 'EMPTY'"
+		-	length(DDL) : 문자 길이 제약조건, String 타입에만 사용한다. (기본 값 : 255)
+		-	precision, scale(DDL) : BigDecimal 타입에서 사용한다.(BigInteger도 사용가능). precision은 소수점을 포함한 전체 자릿수를, scale은 소수의 자릿수다. 참고로 double, float 타입에는 적용되지 않는다. 아주 큰 숫자나 정밀한 소수를 다루어야 할 때만 사용한다. (기본 값 : precision = 19, scale=2)
+
+	-	@Temporal : 날짜 타입 매핑
+
+		-	날짜 타입 (java.util.Date, java.util.Calendar)을 매핑할 때 사용
+			-	TemporalType.DATE : 2013-10-11
+			-	TemporalType.TIME : 11:11:11
+			-	TemporalType.TIMESTAMP : 2013-10-11 11:11:11
+		-	LocalDate, LocalDateTime을 사용할 때는 생략 가능
+
+	-	@Enumerated : enum 타입 매핑
+
+		-	자바 enum 타입을 매핑할 때 사용 (기본 값이 ORDINAL)
+		-	**ORDINAL 사용 X**
+		-	EnumType.ORDINAL : enum 순서를 데이터베이스에 저장 / EnumType.STRING : enum 이름을 데이터베이스에 저장
+		-	운영 중간에 enum 값 추가에 따라 혼란이 올 수 있음 (0 자리에 값이 변경 등)
+
+	-	@Lob : BLOB, CLOB 매핑
+
+		-	데이터베이스 BLOB, CLOB 타입과 매핑
+		-	@Lob에는 지정할 수 있는 속성이 없다.
+		-	매핑하는 필드 타입이 문자면 CLOB 매핑, 나머지는 BLOB 매핑
+			-	CLOB : String, char[], java.sql.CLOB
+			-	BLOB : byte[], java.sql.BLOB
+
+	-	@Transient : 특정 필드를 컬럼에 매핑하지 않음 (매핑 무시)
+
+		-	필드 매핑 X
+		-	데이터베이스에 저장 X, 조회 X
+		-	주로 메모리 상에서만 임시로 어떤 값을 보관하고 싶을 때 사용
