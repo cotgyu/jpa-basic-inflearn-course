@@ -590,3 +590,112 @@
 		-	필드 매핑 X
 		-	데이터베이스에 저장 X, 조회 X
 		-	주로 메모리 상에서만 임시로 어떤 값을 보관하고 싶을 때 사용
+
+### 기본 키 매핑
+
+-	기본 키 매핑 어노테이션
+
+	-	@Id
+
+	-	@GeneratedValue
+
+-	기본 키 매핑 방법
+
+	-	직접 할당 : @Id만 사용
+	-	자동 생성(@GeneratedValue)
+
+		-	IDENTITY : 데이터베이스에 위임, MYSQL
+
+			-	기본 키 생성을 데이터베이스에 위임
+			-	주로 MySQL, PostgreSQL, SQL Server, DB2 에서 사용 (MySQL의 AUTO_INCREMENT)
+			-	JPA는 보통 트랜잭션 커밋 시점에 INSERT SQL 실행
+			-	AUTO_INCREMENT는 데이터베이스에 INSERT SQL을 실행한 이후에 ID 값을 알 수 있음
+			-	IDENTITY 전략은 em.persist() 시점에 즉시 INSERT SQL 실행하고 DB에서 식별자 조회
+
+		-	SEQUENCE : 데이터베이스 스퀀스 오브젝트 사용, ORACLE
+
+			-	데이터베이스 시퀀스는 유일한 값을 순서대로 생성하는 특별한 데이터베이스 오브젝트(ex_ 오카르 시퀀스)
+			-	오라클, PostgreSQL, DB2, H2 데이터베이스에서 사용
+			-	em.persist 전에 DB에서 값을 얻어옴 (call next value for MEMBER_SEQ) (버퍼링 가능)
+			-	insert 마다 call을 하면 성능문제가 걱정될 수 있음. allocationSize 을 통해서 미리 50개의 사이즈를 가져옴 (DB에 미리 올려놓고, 메모리에서 개수많큼 쓰는 방식. 동시성 이슈없음)
+			-	테이블마다 시퀀스를 따로 관리하고 싶으면 @SequenceGenerator 사용
+
+				```text
+				@Entity
+				@SequenceGenerator(
+				        name = “MEMBER_SEQ_GENERATOR",
+				        sequenceName = “MEMBER_SEQ", //매핑할 데이터베이스 시퀀스 이름
+				        initialValue = 1, allocationSize = 50)
+				public class Member {
+				        @Id
+				        @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "MEMBER_SEQ_GENERATOR")
+				        private Long id;
+				```
+
+		-	TABLE : 키 생성요 테이블 사용, 모든 DB에서 사용
+
+			-	키 생성 전용 테이블을 하나 만들어서 데이터베이스 시퀀스를 흉내내는 전략
+			-	장점 : 모든 데이터베이스에 적용 가능
+			-	단점 : 성능
+			-	allocationSize SEQUENCE전략과 동일
+			-	@TableGenerator 필요
+
+				```text
+				@Entity
+				@TableGenerator( name = "MEMBER_SEQ_GENERATOR", table = "MY_SEQUENCES", pkColumnValue = "MEMBER_SEQ", allocationSize = 1)
+				public class Member {
+				    @Id
+				    @GeneratedValue(strategy = GenerationType.TABLE, generator = "MEMBER_SEQ_GENERATOR")
+				    private Long id;
+				```
+
+		-	AUTO : 방언에 따라 자동 지정, 기본 값
+
+-	권장하는 식별자 전략
+
+	-	키본 키 제약 조건 : null 아님, 유일, 변하면 안된다.
+	-	미래까지 이 조건을 만족하는 자연키는 찾기 어렵다. 대리키(대체키)를 사용하자.
+	-	예를 들어 주민등록번호도 기본 키로 적절하지 않다.
+	-	권장 : Long형 + 대체키 + 키 생성전략 사용
+
+### 실전 예제 - 1. 요구사항 분석과 매핑
+
+-	요구사항 분석
+
+	-	회원은 상품을 주문할 수 있다.
+	-	주문 시 여러 종류의 상품을 선택할 수 있다.
+
+-	기능 목록
+
+	-	회원 기능
+
+		-	회원등록
+		-	회원조회
+
+	-	상품 기능
+
+		-	상품등록
+		-	상품수정
+		-	상품조회
+
+	-	주문 기능
+
+		-	상품주문
+		-	주문내역조회
+		-	주문취소
+
+-	도메인 모델 분석
+
+	-	회원과 주문의 관계 : 회원은 여러 번 주문할 수 있다. (일대다)
+	-	주문과 상품의 관계 : 주문할 때 여러 상품을 선택할 수 있다. 반대로 상품도 여러 번 주문될 수 있다. 주문상품이라는 모델을 다대다 관계를 일대다, 다대일 관계로 풀어냄
+
+-	테이블 설계
+
+	-	제약조건을 추가하는 것을 선호한다고함(DB탭 보지않고 확인가능)
+
+-	데이터 중심 설계의 문제점
+
+	-	현재 방식은 객체 설계를 테이블 설계에 맞춘 방식
+	-	테이블의 외래키를 객체에 그대로 가져옴
+	-	객체 그래프 탐색이 불가능
+	-	참조가 없으므로 UML도 잘못됨
