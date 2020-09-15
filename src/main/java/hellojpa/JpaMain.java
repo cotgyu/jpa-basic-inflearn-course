@@ -1,6 +1,8 @@
 package hellojpa;
 
 import hellojpa.domain.Member;
+import hellojpa.ex.Ex_Member;
+import hellojpa.ex.Ex_Team;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -19,6 +21,29 @@ public class JpaMain {
         tx.begin();
 
         try{
+
+            // 저장
+            Ex_Team team = new Ex_Team();
+            team.setName("TeamA");
+            em.persist(team);
+
+
+            Ex_Member member = new Ex_Member();
+            member.setUsername("member1");
+            //member.setTeamId(team.getId());
+            member.setTeam(team);
+            em.persist(member);
+
+            em.flush();
+            em.clear();
+
+            Ex_Member findMember = em.find(Ex_Member.class, member.getId());
+
+//            Long findTeamId = findMember.getTeamId();
+//            Ex_Team findTeam = em.find(Ex_Team.class, findTeamId);
+
+            Ex_Team findTeam = findMember.getTeam();
+            System.out.println("find Team: " + findTeam.getName());
 
             tx.commit();
         }catch (Exception e){
