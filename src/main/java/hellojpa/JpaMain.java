@@ -8,6 +8,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import java.util.List;
 
 public class JpaMain {
 
@@ -42,8 +43,14 @@ public class JpaMain {
 //            Long findTeamId = findMember.getTeamId();
 //            Ex_Team findTeam = em.find(Ex_Team.class, findTeamId);
 
-            Ex_Team findTeam = findMember.getTeam();
-            System.out.println("find Team: " + findTeam.getName());
+//            Ex_Team findTeam = findMember.getTeam();
+//            System.out.println("find Team: " + findTeam.getName());
+
+            List<Ex_Member> members = findMember.getTeam().getMembers();
+
+            for(Ex_Member m : members){
+                System.out.println("m = " + m.getUsername());
+            }
 
             tx.commit();
         }catch (Exception e){
