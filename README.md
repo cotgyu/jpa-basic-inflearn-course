@@ -734,7 +734,7 @@
 	-	객체는 참조를 사용해서 연관된 객체를 찾는다.
 	-	테이블과 객체 사이에는 이런 큰 간격이 있다.
 
-### 양방향 연관관계와 연관관계의 주인
+### 양방향 연관관계와 연관관계의 주인 1 - 기본
 
 -	**이 강좌에서 제일 중요한 부분임**
 
@@ -782,3 +782,119 @@
 
 	-	**외래 키가 있는 곳을 주인으로 정해라** (외래키가 있는 곳이 다(N) 임. 다(N) 쪽이 연관관계 주인이 됨. 알맞은 테이블에 업데이트가 나가서 직관적임.)
 	-	여기서는 Member.team이 연관관계의 주인
+
+### 양방향 연관관계와 연관관계의 주인 2 - 주의점, 정리
+
+-	양방향 매핑 시 가장 많이 하는 실수 : 연관관계의 주인에 값을 입력하지 않음
+
+	```java
+	// 실수
+	Team team = new Team(); 
+	team.setName("TeamA"); 
+	em.persist(team); 
+
+
+	Member member = new Member(); 
+	member.setName("member1"); 
+	//역방향(주인이 아닌 방향)만 연관관계 설정 
+	team.getMembers().add(member); 
+	em.persist(member); 
+
+
+	// 정상
+	Team team = new Team(); 
+	team.setName("TeamA"); 
+	em.persist(team); 
+
+
+	Member member = new Member(); 
+	member.setName("member1"); 
+	member.setTeam(team)
+	em.persist(member); 
+	```
+
+-	양방향 매핑 시 연관관계의 주인에 값을 입력해야 한다. : 순수한 객체 관계를 고려하면 항상 양쪽 다 값을 입력해야한다.
+
+	-	문제점
+		-	flush, clear 를 안할 경우 DB에서 select 쿼리가 안나가기 때문에 객체에서는 셋팅을 해줬지만, 셋팅된 내용이 반영이 안된 상태로 사용될 수 있음.
+		-	테스트 케이스 작성 시 JPA를 사용하지 않을 수 있는데, 두 객체가 달라 맞지않는 문제가 생길 수 있음 (양쪽 다 셋팅해줘야함!)
+
+	```java
+	Team team = new Team(); 
+	team.setName("TeamA"); 
+	em.persist(team); 
+
+
+	Member member = new Member(); 
+	member.setName("member1"); 
+
+
+	team.getMembers().add(member); //연관관계의 주인에 값 설정
+	member.setTeam(team); //** 
+
+
+	em.persist(member); 
+	```
+
+-	양방향 연관관계 주의 - 실습
+
+	-	**순수 객체 상태를 고려해서 양쪽에 값을 설정하자**
+	-	연관관계 편의 메서드를 생성하자 (둘 중 한 곳에만 넣는 것을 추천)
+
+		```java
+		// getter setter 관례가 있기 때문에 메서드이름은 변경을 추천함
+		// 기타 비즈니스 로직이 생성될 수 있음
+		public void changeTeam(Team team){
+		    this.team = team;
+		    team.getMember().add(this);
+		}
+		```
+
+	-	양방향 매핑 시 무한 루프를 조심하자
+
+		-	ex_ toString(), lombok, JSON 생성 라이브러리
+		-	컨트롤러에서는 엔티티를 절대 반환하지 말 것
+			-	무한루프생성 가능성 있음, 엔티티를 변경하는 순간 API 스펙이 변경되어버림
+			-	**엔티티는 DTO로 변환 후 사용할 것!**
+
+		```java
+		// Member
+		@Override
+		public String toString() {
+		return "Ex_Member{" +
+		        "id=" + id +
+		        ", username='" + username + '\'' +
+		        ", team=" + team + // 매핑된 양쪽으로 toString을 호출할 수 있음
+		        '}';
+		}
+
+
+		// Team
+		@Override
+		public String toString() {
+		return "Ex_Team{" +
+		        "id=" + id +
+		        ", name='" + name + '\'' +
+		        ", members=" + members + // 매핑된 양쪽으로 toString을 호출할 수 있음
+		        '}';
+		}
+		```
+
+-	양방향 매핑 정리
+
+	-	**단방향 매핑만으로도 이미 연관관계 매핑은 완료** (최초 설계 시 단방향 매핑으로 끝낼 것!)
+	-	양방향 매핑은 반대 방향으로 조회(객체 그래프 탐색) 기능이 추가된 것 뿐
+	-	JPQL에서 역방향으로 탐색할 일이 많음(편하게 사용하기 위해 양방향을 필요할 때 있음...)
+	-	단방향 매핑을 잘 하고 양방향은 필요할 때 추가해도 됨 (테이블에 영향을 주지 않음)
+
+-	연관관계의 주인을 정하는 기준
+
+	-	비즈니스 로직을 기준으로 연관관계의 주인을 선택하면 안됨
+	-	**연관관계의 주인은 외래 키의 위치를 기준으로 정해야함!!**
+		-	운영기준 관점에서도 이점이 많음
+
+### 실전 예제 2 - 연관관계 매핑 시작
+
+-	테이블 구조는 이전과 같음
+
+-	객체구조는 참조를 사용하도록 변경

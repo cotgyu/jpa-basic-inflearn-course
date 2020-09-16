@@ -3,7 +3,9 @@ package hellojpa.domain;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 // USER 테이블에 입력됨. @Table(name = "USER")
@@ -19,7 +21,8 @@ public class Member {
     private String street;
     private String zipcode;
 
-
+    @OneToMany(mappedBy = "member")
+    private List<Order> orders = new ArrayList<>();
 
     public Member(){
 
