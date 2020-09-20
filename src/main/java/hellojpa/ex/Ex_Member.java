@@ -1,6 +1,8 @@
 package hellojpa.ex;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Ex_Member {
@@ -17,7 +19,14 @@ public class Ex_Member {
 
     @ManyToOne // 팀이 1, 멤버가 N
     @JoinColumn(name = "TEAM_ID")
-    private Ex_Team team;
+    private Ex_Team exTeam;
+
+    @OneToOne
+    @JoinColumn(name = "LOCKER_ID")
+    private Ex_Locker exLocker;
+
+    @OneToMany(mappedBy = "exMember")
+    private List<Ex_MemberProduct> exMemberProducts = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -36,10 +45,10 @@ public class Ex_Member {
     }
 
     public Ex_Team getTeam() {
-        return team;
+        return exTeam;
     }
 
     public void setTeam(Ex_Team team) {
-        this.team = team;
+        this.exTeam = team;
     }
 }
