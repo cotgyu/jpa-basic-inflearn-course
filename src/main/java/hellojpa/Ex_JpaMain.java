@@ -2,6 +2,7 @@ package hellojpa;
 
 import hellojpa.domain.Member;
 import hellojpa.ex.Ex_Member;
+import hellojpa.ex.Ex_Movie;
 import hellojpa.ex.Ex_Team;
 
 import javax.persistence.EntityManager;
@@ -23,34 +24,23 @@ public class Ex_JpaMain {
 
         try{
 
-            // 저장
-            Ex_Team team = new Ex_Team();
-            team.setName("TeamA");
-            em.persist(team);
+            Ex_Movie ex_movie = new Ex_Movie();
+            ex_movie.setDirector("a");
+            ex_movie.setActor("bbb");
+            ex_movie.setName("영화");
+            ex_movie.setPrice(100000);
 
-
-            Ex_Member member = new Ex_Member();
-            member.setUsername("member1");
-            //member.setTeamId(team.getId());
-            member.setTeam(team);
-            em.persist(member);
+            em.persist(ex_movie);
 
             em.flush();
             em.clear();
 
-            Ex_Member findMember = em.find(Ex_Member.class, member.getId());
 
-//            Long findTeamId = findMember.getTeamId();
-//            Ex_Team findTeam = em.find(Ex_Team.class, findTeamId);
+            Ex_Movie findMovie = em.find(Ex_Movie.class, ex_movie.getId());
 
-//            Ex_Team findTeam = findMember.getTeam();
-//            System.out.println("find Team: " + findTeam.getName());
+            System.out.println(findMovie);
 
-            List<Ex_Member> members = findMember.getTeam().getMembers();
 
-            for(Ex_Member m : members){
-                System.out.println("m = " + m.getUsername());
-            }
 
             tx.commit();
         }catch (Exception e){
