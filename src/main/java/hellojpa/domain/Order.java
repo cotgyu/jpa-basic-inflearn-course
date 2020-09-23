@@ -7,7 +7,7 @@ import java.util.List;
 
 @Entity
 @Table(name= "ORDERS") // 디비의 ORDER 와 겹을 피하기 위해 ORDERS
-public class Order {
+public class Order extends BaseEntity{
 
     @Id @GeneratedValue
     @Column(name = "ORDER_ID")

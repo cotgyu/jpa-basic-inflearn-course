@@ -6,7 +6,7 @@ import java.util.List;
 
 @Entity
 // USER 테이블에 입력됨. @Table(name = "USER")
-public class Member {
+public class Member extends BaseEntity{
 
     @Id
     @GeneratedValue

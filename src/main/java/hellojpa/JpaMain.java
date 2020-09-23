@@ -1,5 +1,6 @@
 package hellojpa;
 
+import hellojpa.domain.Book;
 import hellojpa.domain.Order;
 import hellojpa.domain.OrderItem;
 import hellojpa.ex.Ex_Member;
@@ -23,15 +24,11 @@ public class JpaMain {
         tx.begin();
 
         try{
+            Book book = new Book();
+            book.setName("JPA");
+            book.setAuthor("김영한");
 
-            Order order = new Order();
-            order.addOrderItem(new OrderItem());
-            em.persist(order);
-
-            // 양방향 말고 이렇게 해도 가능!!
-//            OrderItem orderItem = new OrderItem();
-//            orderItem.setOrder(order);
-//            em.persist(orderItem);
+            em.persist(book);
 
             tx.commit();
         }catch (Exception e){

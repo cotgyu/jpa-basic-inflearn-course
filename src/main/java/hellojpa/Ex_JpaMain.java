@@ -9,6 +9,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class Ex_JpaMain {
@@ -24,22 +25,16 @@ public class Ex_JpaMain {
 
         try{
 
-            Ex_Movie ex_movie = new Ex_Movie();
-            ex_movie.setDirector("a");
-            ex_movie.setActor("bbb");
-            ex_movie.setName("영화");
-            ex_movie.setPrice(100000);
 
-            em.persist(ex_movie);
+            Ex_Member member = new Ex_Member();
+            member.setUsername("user1");
+            member.setCreateDBy("kim");
+            member.setCreatedDate(LocalDateTime.now());
+
+            em.persist(member);
 
             em.flush();
             em.clear();
-
-
-            Ex_Movie findMovie = em.find(Ex_Movie.class, ex_movie.getId());
-
-            System.out.println(findMovie);
-
 
 
             tx.commit();

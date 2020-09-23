@@ -1,11 +1,12 @@
 package hellojpa.ex;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-public class Ex_Member {
+public class Ex_Member extends Ex_BaseEntity{
 
     @Id @GeneratedValue
     @Column(name = "MEMBER_ID")
