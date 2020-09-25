@@ -1,9 +1,7 @@
 package hellojpa;
 
 import hellojpa.domain.Member;
-import hellojpa.ex.Ex_Member;
-import hellojpa.ex.Ex_Movie;
-import hellojpa.ex.Ex_Team;
+import hellojpa.ex.*;
 import org.hibernate.Hibernate;
 
 import javax.persistence.*;
@@ -106,34 +104,56 @@ public class Ex_JpaMain {
 //
 //            // 두번호출해도 더 이상 조회안함
 //            System.out.println(findMember.getUsername());
+//
+//            Ex_Team team = new Ex_Team();
+//            team.setName("teamA");
+//            em.persist(team);
+//
+//            Ex_Member member1 = new Ex_Member();
+//            member1.setUsername("member1");
+//            member1.setTeam(team);
+//
+//            em.persist(member1);
+//
+//            em.flush();
+//            em.clear();
+//
+//            Ex_Member m = em.find(Ex_Member.class, member1.getId());
+//
+//            // find를헀지만 Team은 프록시 출력됨!
+//            System.out.println(m.getTeam().getClass());
+//
+//            System.out.println("---");
+//            // 값을 가져옴
+//            member1.getTeam().getName();
+//            System.out.println("---");
+//
+//
+//            // 쿼리가 2개 나감 member, team
+//            List<Ex_Member> members = em.createQuery("select m from Ex_Member  m", Ex_Member.class).getResultList();
 
-            Ex_Team team = new Ex_Team();
-            team.setName("teamA");
-            em.persist(team);
 
-            Ex_Member member1 = new Ex_Member();
-            member1.setUsername("member1");
-            member1.setTeam(team);
+            Child child1 = new Child();
+            Child child2 = new Child();
 
-            em.persist(member1);
+            Parent parent = new Parent();
+            parent.addChild(child1);
+            parent.addChild(child2);
+
+
+            // 3개를 persist 해야함.. cascade 를 추가하면 하나만 해도 됌
+            //
+            em.persist(parent);
+            //em.persist(child1);
+            //em.persist(child2);
 
             em.flush();
             em.clear();
 
-            Ex_Member m = em.find(Ex_Member.class, member1.getId());
+            Parent findParent = em.find(Parent.class, parent.getId());
+            //findParent.getChildList().remove(0);
 
-            // find를헀지만 Team은 프록시 출력됨!
-            System.out.println(m.getTeam().getClass());
-
-            System.out.println("---");
-            // 값을 가져옴
-            member1.getTeam().getName();
-            System.out.println("---");
-
-
-            // 쿼리가 2개 나감 member, team
-            List<Ex_Member> members = em.createQuery("select m from Ex_Member  m", Ex_Member.class).getResultList();
-
+            em.remove(findParent);
 
             tx.commit();
         }catch (Exception e){
