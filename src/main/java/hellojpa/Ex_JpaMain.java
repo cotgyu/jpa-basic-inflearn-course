@@ -155,6 +155,38 @@ public class Ex_JpaMain {
 
             em.remove(findParent);
 
+
+
+            Ex_Member member3 = new Ex_Member();
+            member3.setUsername("3");
+            member3.setHomeAddress(new Ex_Address("city", "street", "zipcode"));
+            member3.setWorkPeriod(new Ex_Period());
+
+            em.persist(member3);
+
+
+            // 업데이트가 두번 나간다
+            Ex_Address address = new Ex_Address("city", "street", "10000");
+
+            Ex_Member member1 = new Ex_Member();
+            member1.setUsername("1m");
+            member1.setHomeAddress(address);
+            em.persist(member1);
+
+
+            Ex_Member member2 = new Ex_Member();
+            member2.setUsername("2m");
+            member2.setHomeAddress(address);
+            em.persist(member1);
+
+
+            //member1.getHomeAddress().setCity("newCity");
+
+
+            // 복사한 값을 써야함!
+            Ex_Address copyAddress = new Ex_Address(address.getCity(), address.getStreet(), address.getZipcode());
+
+
             tx.commit();
         }catch (Exception e){
             tx.rollback();

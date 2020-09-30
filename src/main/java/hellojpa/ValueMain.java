@@ -1,5 +1,7 @@
 package hellojpa;
 
+import hellojpa.ex.Ex_Address;
+
 public class ValueMain {
 
     public static void main(String[] args) {
@@ -20,6 +22,11 @@ public class ValueMain {
         Integer a1 = new Integer(10);
         Integer b1 = a1;
 
+        Ex_Address address1 = new Ex_Address("city1", "street1", "zip1");
+        Ex_Address address2 = new Ex_Address("city1", "street1", "zip1");
+
+        System.out.println("== :" + (address1 == address2));
+        System.out.println("equals :" + (address1.equals(address2)));
 
     }
 }
