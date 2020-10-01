@@ -155,36 +155,78 @@ public class Ex_JpaMain {
 
             em.remove(findParent);
 
-
-
-            Ex_Member member3 = new Ex_Member();
-            member3.setUsername("3");
-            member3.setHomeAddress(new Ex_Address("city", "street", "zipcode"));
-            member3.setWorkPeriod(new Ex_Period());
-
-            em.persist(member3);
-
-
-            // 업데이트가 두번 나간다
-            Ex_Address address = new Ex_Address("city", "street", "10000");
-
-            Ex_Member member1 = new Ex_Member();
-            member1.setUsername("1m");
-            member1.setHomeAddress(address);
-            em.persist(member1);
-
-
-            Ex_Member member2 = new Ex_Member();
-            member2.setUsername("2m");
-            member2.setHomeAddress(address);
-            em.persist(member1);
+//
+//
+//            Ex_Member member3 = new Ex_Member();
+//            member3.setUsername("3");
+//            member3.setHomeAddress(new Ex_Address("city", "street", "zipcode"));
+//            member3.setWorkPeriod(new Ex_Period());
+//
+//            em.persist(member3);
+//
+//
+//            // 업데이트가 두번 나간다
+//            Ex_Address address = new Ex_Address("city", "street", "10000");
+//
+//            Ex_Member member1 = new Ex_Member();
+//            member1.setUsername("1m");
+//            member1.setHomeAddress(address);
+//            em.persist(member1);
+//
+//
+//            Ex_Member member2 = new Ex_Member();
+//            member2.setUsername("2m");
+//            member2.setHomeAddress(address);
+//            em.persist(member1);
 
 
             //member1.getHomeAddress().setCity("newCity");
 
 
-            // 복사한 값을 써야함!
-            Ex_Address copyAddress = new Ex_Address(address.getCity(), address.getStreet(), address.getZipcode());
+//                       // 복사한 값을 써야함!
+//            Ex_Address copyAddress = new Ex_Address(address.getCity(), address.getStreet(), address.getZipcode());
+
+
+            Ex_Member memberK = new Ex_Member();
+            memberK.setUsername("memberK");
+            memberK.setHomeAddress(new Ex_Address("city", "street", "zip"));
+
+            memberK.getFavoriteFoods().add("치킨");
+            memberK.getFavoriteFoods().add("족발");
+            memberK.getFavoriteFoods().add("피자");
+
+            memberK.getAddressHistory().add(new Ex_AddressEntity("old1", "street", "zip"));
+            memberK.getAddressHistory().add(new Ex_AddressEntity("old2", "street", "zip"));
+
+
+            em.persist(memberK);
+
+            em.flush();
+            em.clear();
+
+            Ex_Member findMember = em.find(Ex_Member.class, memberK.getId());
+
+//            // 값 타입 컬렉션 조회
+//            List<Ex_Address> addressHistory = findMember.getAddressHistory();
+//
+//            // 이때 실제 조회
+//            for(Ex_Address f_Address : addressHistory){
+//                System.out.println(f_Address.getCity());
+//            }
+
+
+            // 값 타입 수정
+            // setCity XXX  통으로 갈아끼우는게 맞음
+            findMember.setHomeAddress(new Ex_Address("new","street","zip"));
+
+            // 치킨 -> 한식
+            findMember.getFavoriteFoods().remove("치킨");
+            findMember.getFavoriteFoods().add("한식");
+
+            //
+            //findMember.getAddressHistory().remove(new Ex_Address("old1", "street", "zip"));
+            //findMember.getAddressHistory().add(new Ex_Address("newCity1", "street", "zip"));
+
 
 
             tx.commit();

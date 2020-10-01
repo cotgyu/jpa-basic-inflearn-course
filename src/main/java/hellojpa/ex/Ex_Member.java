@@ -3,7 +3,11 @@ package hellojpa.ex;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import static javax.persistence.CascadeType.ALL;
 
 @Entity
 public class Ex_Member extends Ex_BaseEntity{
@@ -33,9 +37,26 @@ public class Ex_Member extends Ex_BaseEntity{
     @Embedded
     private Ex_Period workPeriod;
 
+
+
+    @ElementCollection
+    @CollectionTable(name = "FAVORITE_FOOD", joinColumns = @JoinColumn(name = "MEMBER_ID"))
+    @Column(name = "FOOD_NAME")
+    private Set<String> favoriteFoods = new HashSet<>();
+
     // 주소
     @Embedded
     private Ex_Address homeAddress;
+//
+//
+//    @ElementCollection
+//    @CollectionTable(name = "ADDRESS", joinColumns = @JoinColumn(name = "MEMBER_ID"))
+//    private List<Ex_Address> addressHistory = new ArrayList<>();
+
+    // 값 타입 컬렉션 대안
+    @OneToMany(cascade = ALL, orphanRemoval = true)
+    @JoinColumn(name = "MEMBER_ID")
+    private List<Ex_AddressEntity> addressHistory = new ArrayList<>();
 
     // 주소
     @Embedded
@@ -111,5 +132,29 @@ public class Ex_Member extends Ex_BaseEntity{
 
     public void setTeam(Ex_Team team) {
         this.exTeam = team;
+    }
+
+    public Set<String> getFavoriteFoods() {
+        return favoriteFoods;
+    }
+
+    public void setFavoriteFoods(Set<String> favoriteFoods) {
+        this.favoriteFoods = favoriteFoods;
+    }
+
+    public List<Ex_AddressEntity> getAddressHistory() {
+        return addressHistory;
+    }
+
+    public void setAddressHistory(List<Ex_AddressEntity> addressHistory) {
+        this.addressHistory = addressHistory;
+    }
+
+    public Ex_Address getWorkAddress() {
+        return workAddress;
+    }
+
+    public void setWorkAddress(Ex_Address workAddress) {
+        this.workAddress = workAddress;
     }
 }
