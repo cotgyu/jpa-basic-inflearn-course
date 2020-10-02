@@ -2,6 +2,9 @@ package hellojpa;
 
 import hellojpa.domain.Book;
 import hellojpa.jpql.J_Member;
+import hellojpa.jpql.J_MemberDTO;
+import hellojpa.jpql.J_MemberType;
+import hellojpa.jpql.J_Team;
 
 import javax.persistence.*;
 import java.util.List;
@@ -38,6 +41,134 @@ public class J_JpaMain {
                     .getSingleResult();
 
             System.out.println(singleResult.getUsername());
+
+            em.flush();
+            em.clear();
+
+            // 프로젝션 설명
+            List<J_Member> resultList1 = em.createQuery("select m  from J_Member m", J_Member.class)
+                    .getResultList();
+
+            J_Member findMember = resultList1.get(0);
+            findMember.setAge(20);
+
+
+            // 여러 값 new 명령어로 조회
+            List<J_MemberDTO> resultList2 = em.createQuery("select new hellojpa.jpql.J_MemberDTO(m.username, m.age) from J_Member m", J_MemberDTO.class)
+                    .getResultList();
+
+            J_MemberDTO j_memberDTO = resultList2.get(0);
+
+            System.out.println(j_memberDTO.getUsername());
+            System.out.println(j_memberDTO.getAge());
+
+
+            // 페이징
+            List<J_Member> resultList3 = em.createQuery("select m from J_Member m order by m.age desc", J_Member.class)
+                    .setFirstResult(2)
+                    .setMaxResults(10)
+                    .getResultList();
+
+            System.out.println(resultList3.size());
+
+
+
+
+            // 조인
+            J_Team j_team = new J_Team();
+            j_team.setName("team1");
+            em.persist(j_team);
+
+            J_Member j_member2 = new J_Member();
+            j_member2.setUsername("member2");
+            j_member2.setAge(10);
+            j_member2 .setJ_team(j_team);
+
+            em.persist(j_member2);
+
+            em.flush();
+            em.clear();
+
+
+            String query = "select m from J_Member m inner join m.j_team t";
+
+            List<J_Member> resultList4 = em.createQuery(query, J_Member.class).getResultList();
+
+
+
+            String typeQuery = "select m.username, 'HELLO', TRUE from J_Member m " +
+                    "where m.j_type = hellojpa.jpql.J_MemberType.ADMIN" ;
+
+            em.createQuery(typeQuery).getResultList();
+
+
+            // 파라미터 사용
+            String typeQuery2 = "select m.username, 'HELLO', TRUE from J_Member m " +
+                    "where m.j_type = :userType" ;
+
+            em.createQuery(typeQuery2)
+                    .setParameter("userType", J_MemberType.ADMIN)
+                    .getResultList();
+
+
+            // 조건식
+            String caseQuery =
+                    "select " +
+                        "case when m.age <= 10 then '학생요금' " +
+                            "when m.age >= 60 then '경로요금' "+
+                            "else '일반요금' " +
+                            "end " +
+                    "from J_Member m";
+
+
+            List<String> resultList5 = em.createQuery(caseQuery, String.class)
+                    .getResultList();
+
+
+            // COALESCE
+            String COALESCEQuery =
+                    "select coalesce(m.username, '이름없는 회원') from J_Member m";
+
+            List<String> resultList6 = em.createQuery(COALESCEQuery, String.class)
+                    .getResultList();
+
+
+            // NULLIF
+            String NULLIFQuery =
+                    "select nullif(m.username, '관리자') from J_Member m";
+
+            List<String> resultList7 = em.createQuery(NULLIFQuery, String.class)
+                    .getResultList();
+
+
+
+            // 기본함수
+            String testQuery =
+                    "select concat('a', 'b') from J_Member m";
+
+            em.createQuery(testQuery, String.class)
+                    .getResultList();
+
+
+
+            String sizeQuery =
+                    "select size(t.members) from J_Team t";
+
+            em.createQuery(sizeQuery, String.class)
+                    .getResultList();
+
+
+
+
+            String gcQuery =
+                    "select function('group_concat', m.username) from J_Member m";
+
+            em.createQuery(gcQuery, String.class)
+                    .getResultList();
+
+
+
+
 
 
             tx.commit();
