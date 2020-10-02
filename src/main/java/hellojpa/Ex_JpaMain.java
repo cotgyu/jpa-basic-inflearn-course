@@ -5,6 +5,9 @@ import hellojpa.ex.*;
 import org.hibernate.Hibernate;
 
 import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -228,6 +231,25 @@ public class Ex_JpaMain {
             //findMember.getAddressHistory().add(new Ex_Address("newCity1", "street", "zip"));
 
 
+
+            List<Ex_Member> memberList = em.createQuery(
+                    "select m from Ex_Member m where m.username like '%kim' ",
+                    Ex_Member.class)
+                    .getResultList();
+
+
+            // Criteria 사용 예시
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Ex_Member> query = cb.createQuery(Ex_Member.class);
+
+            Root<Ex_Member> m = query.from(Ex_Member.class);
+
+            CriteriaQuery<Ex_Member> cq = query.select(m).where(cb.equal((m.get("username")), "kim"));
+
+            List<Ex_Member> resultList = em.createQuery(cq).getResultList();
+
+            // 네이티브 쿼리
+            em.createNativeQuery("select MEMBER_ID, city, street from EX_MEMBER").getResultList();
 
             tx.commit();
         }catch (Exception e){
