@@ -80,7 +80,7 @@ public class J_JpaMain {
             em.persist(j_team);
 
             J_Member j_member2 = new J_Member();
-            j_member2.setUsername("member2");
+            j_member2.setUsername("member3");
             j_member2.setAge(10);
             j_member2 .setJ_team(j_team);
 
@@ -167,7 +167,68 @@ public class J_JpaMain {
                     .getResultList();
 
 
+            // fetch join
+            J_Team teamA = new J_Team();
+            teamA.setName("팀 A");
+            em.persist(teamA);
 
+            J_Team teamB = new J_Team();
+            teamA.setName("팀 B");
+            em.persist(teamB);
+
+            J_Member member1 = new J_Member();
+            member1.setUsername("회원1");
+            member1.setJ_team(teamA);
+            em.persist(member1);
+
+
+            J_Member member2 = new J_Member();
+            member2.setUsername("회원2");
+            member2.setJ_team(teamA);
+            em.persist(member2);
+
+            J_Member member3 = new J_Member();
+            member3.setUsername("회원3");
+            member3.setJ_team(teamB);
+            em.persist(member3);
+
+            em.flush();
+            em.clear();
+
+            // 새로운 팀을 조회할 때 마다 SQL이 새로 나감
+            String fetchQuery1 = "select m from J_Member m";
+
+            List<J_Member> resultList8 = em.createQuery(fetchQuery1, J_Member.class)
+                    .getResultList();
+
+
+            // 한번에 모든 팀 조회
+            String fetchQuery2 = "select m from J_Member m join fetch m.j_team";
+
+            List<J_Member> resultList9 = em.createQuery(fetchQuery2, J_Member.class)
+                    .getResultList();
+
+            for (J_Member member : resultList9) {
+
+                System.out.println("member = : "+ member.getUsername()+ ", " + member.getJ_team());
+
+            }
+
+            // named
+            em.createNamedQuery("J_Member.findByUsername", J_Member.class)
+                    .setParameter("username", "회원1")
+                    .getResultList();
+
+
+            // 벌크 연산
+            int resultCount = em.createQuery("update J_Member m set m.age = 20")
+                    .executeUpdate();
+
+
+            J_Member findMember2 = em.find(J_Member.class, member1.getId());
+
+            // update 전 age가 출력됨. 벌크연산 후 em.clear(); 를 해줄 것!
+            System.out.println(findMember2.getAge());
 
 
 
