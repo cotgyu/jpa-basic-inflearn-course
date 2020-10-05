@@ -1,6 +1,9 @@
 자바 ORM 표준 JPA 표준 프로그래밍 - 기본편
 ------------------------------------------
 
+- 인프런 김영한 강의 메모 
+    - https://www.inflearn.com/course/ORM-JPA-Basic/dashboard
+
 ---
 
 1챕터 - JPA 소개
